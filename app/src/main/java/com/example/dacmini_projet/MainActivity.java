@@ -87,8 +87,10 @@ private FloatingActionButton checkAllBtn;
         });
 
         checkAllBtn.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+
                 for (int i = 0; i< downloadsList.size();i++){
                     downloadRecyclerViewAdapter.viewHolders.get(i).downloadBtn.callOnClick();
                 }

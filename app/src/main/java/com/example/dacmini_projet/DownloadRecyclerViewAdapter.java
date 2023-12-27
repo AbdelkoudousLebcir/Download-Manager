@@ -1,5 +1,7 @@
 package com.example.dacmini_projet;
 
+import static com.example.dacmini_projet.NotificationHelper.showNotification;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.os.Environment;
@@ -26,16 +28,25 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // this is the recycler view adapter where most of things happen it's like a bridge between the recycler view interface and the java code
 public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRecyclerViewAdapter.ViewHolder> {
     private ArrayList<DownloadableItem> downloads;
     Context context;
+    private static AtomicInteger activeDownloadsNbr;
+    private static AtomicInteger uncompleted;
+    private static AtomicInteger completed;
+
+
 
     public DownloadRecyclerViewAdapter(ArrayList<DownloadableItem> downloads, Context context) {
         this.downloads = downloads;
         this.context = context;
         viewHolders = new ArrayList<>();
+        activeDownloadsNbr = new AtomicInteger(0);
+        uncompleted = new AtomicInteger(0);
+        completed = new AtomicInteger(0);
     }
 
     ArrayList<ViewHolder> viewHolders;
@@ -59,6 +70,28 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
     @Override
     public void onBindViewHolder(@NonNull DownloadRecyclerViewAdapter.ViewHolder holder, int position) {
         DownloadableItem downloadableItem = downloads.get(position);
+        holder.delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!holder.downloadFinished) {
+                    holder.fileDownloader.cancel(true);
+                    Toast.makeText(context, "Download canceled", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(context, "File deleted", Toast.LENGTH_LONG).show();
+                }
+                ViewGroup.LayoutParams layoutParams = holder.swipeLayout.getLayoutParams();
+                layoutParams.height = 0;
+                holder.swipeLayout.setLayoutParams(layoutParams);
+                ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) holder.swipeLayout.getLayoutParams();
+                marginLayoutParams.setMargins(0, 0, 0, 0);
+                holder.swipeLayout.setLayoutParams(marginLayoutParams);
+                File file = new File(holder.fileName);
+                if (file.exists())
+                    file.delete();
+
+            }
+        });
+
     }
 
     @Override
@@ -91,7 +124,9 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
         RelativeLayout right_side;
         TextView time;
         TextView fileNameT;
-        boolean downloadStarted= false;
+        boolean downloadFinished = false;
+        String fileName;
+        FileDownloader fileDownloader;
 
         // first we need to link the components of the view with the code
         public ViewHolder(@NonNull View itemView) {
@@ -110,6 +145,9 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
             downloadImage = itemView.findViewById(R.id.imageView);
             time = itemView.findViewById(R.id.time);
             fileNameT = itemView.findViewById(R.id.fileNameT);
+            pause.setClickable(false);
+            resume.setClickable(false);
+            delete.setClickable(false);
 
 
             // setting the properties of the progress bar
@@ -152,8 +190,6 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
             });
 
 
-
-
             downloadBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -180,19 +216,21 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
                         //  this is made to wait for the checking response i can't use the thread sleep methode because in android you can't sleep the main thread or the app will crash
                         final Runnable runnable = new Runnable() {
                             public void run() {
+
                                 if (count[0]++ < 51) {
                                     if (downloadable != null) {
                                         if (downloadable) {
+
                                             String type[] = contentType.split("/");
 
                                             // if it's donloadble we start the download and we update the ui
-                                            String fileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + name + "." + type[type.length - 1];
-                                            if (new File(fileName).exists()){
-                                                NetChecker.showCostumDialog(context,"يوجد ملف يحمل نفس الإسم الرجاء تغيير الإسم و المحاولة مرة أخرى.\na file with the given name already exists please change the name and try again.", 1);
+                                            fileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/" + name + "." + type[type.length - 1];
+                                            if (new File(fileName).exists()) {
+                                                NetChecker.showCostumDialog(context, "يوجد ملف يحمل نفس الإسم الرجاء تغيير الإسم و المحاولة مرة أخرى.\na file with the given name already exists please change the name and try again.", 1);
                                                 return;
                                             }
 
-                                            FileDownloader fileDownloader = new FileDownloader(new FileDownloader.DownloadListener() {
+                                            fileDownloader = new FileDownloader(new FileDownloader.DownloadListener() {
                                                 int p = -1;
                                                 int c = 0;
 
@@ -207,7 +245,11 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
 
                                                                 }
                                                             });
+                                                            activeDownloadsNbr.incrementAndGet();
                                                             c++;
+                                                            pause.setClickable(true);
+                                                            resume.setClickable(true);
+                                                            delete.setClickable(true);
                                                             fileNameT.setText(name + "." + type[type.length - 1]);
                                                             right_side.setVisibility(View.VISIBLE);
                                                             checkBtn.setVisibility(View.GONE);
@@ -294,6 +336,13 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
                                                     ViewGroup.MarginLayoutParams deleteLayoutParams = (ViewGroup.MarginLayoutParams) delete.getLayoutParams();
                                                     deleteLayoutParams.setMargins(20, 10, 10, 10);
                                                     delete.setLayoutParams(deleteLayoutParams);
+                                                    downloadFinished = true;
+                                                    activeDownloadsNbr.decrementAndGet();
+                                                    completed.incrementAndGet();
+                                                    if (activeDownloadsNbr.get() == 0) {
+                                                        showNotification(context,"All your downloads has finished",+completed.get()+"  succeed\n"+uncompleted.get()+"  failed");
+
+                                                    }
 
 
                                                 }
@@ -301,15 +350,24 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
                                                 @Override
                                                 public void onDownloadFailed() {
                                                     if (NetChecker.isConnected(context)) {
-                                                        Toast.makeText(context, " Download failed, An error has occurred", Toast.LENGTH_SHORT).show();
+                                                        showNotification(context,"All your downloads has finished",+completed.get()+" succeed,\n "+uncompleted.get()+" failed.");
                                                     } else {
-                                                        NetChecker.showCostumDialog(context,"فشل تحميل الملف يرجى الإتصال بالإنترنت و المحاولة مرة أخرى\n File download failed please connect to the INTERNET and try again",2);
+                                                        NetChecker.showCostumDialog(context, "فشل تحميل الملف يرجى الإتصال بالإنترنت و المحاولة مرة أخرى\n File download failed please connect to the INTERNET and try again", 2);
                                                         downloadImage.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.pdf)));
 
                                                     }
                                                     downloadImage.setImageResource(R.drawable.failed);
                                                     time.setText("Download failed");
                                                     downloadImage.setBackgroundTintList(ColorStateList.valueOf(context.getResources().getColor(R.color.red)));
+                                                    downloadFinished = true;
+                                                    File file = new File(fileName);
+                                                    file.delete();
+                                                    activeDownloadsNbr.decrementAndGet();
+                                                    uncompleted.incrementAndGet();
+                                                    if (activeDownloadsNbr.get() == 0) {
+                                                        showNotification(context,"Download Manager","All your downloads has finished,\n "+completed.get()+" succeed,\n "+uncompleted.get()+" failed.");
+
+                                                    }
 
                                                 }
                                             }, fileLength);
@@ -336,13 +394,7 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
                                                 }
                                             });
 
-                                            delete.setOnClickListener(new View.OnClickListener() {
-                                                @Override
-                                                public void onClick(View v) {
-                                                    fileDownloader.cancel(true);
 
-                                                }
-                                            });
                                         } else {
                                             return;
                                         }
@@ -445,6 +497,7 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
                     }
                 });
                 thread.start();
+                thread.join();
                 Log.d("ttt", String.valueOf(downloadable));
             } else
                 return;
@@ -466,5 +519,7 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
             return v;
         }
     }
+
+
 
 }
