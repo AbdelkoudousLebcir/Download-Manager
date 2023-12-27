@@ -1,0 +1,28 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.DACMiniprojet" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    </style>
+
+    <style name="AppBottomNavigationStyle" parent="Widget.Design.BottomNavigationView">
+
+        <!-- Disable item icon and text animations
+        <item name="android:animateLayoutChanges">false</item>-->
+        <item name="android:itemBackground">@drawable/bottum_bar_items_style</item>
+
+
+
+        <!-- Disable item icon animations -->
+        <item name="itemIconTint">@color/black</item>
+
+        <!-- Disable item text animations -->
+        <item name="itemTextAppearanceActive">@null</item>
+        <item name="itemHorizontalTranslationEnabled">false</item>
+
+        <item name="itemTextAppearanceInactive">@null</item>
+    </style>
+
+    <style name="Theme.DACMiniprojet" parent="Base.Theme.DACMiniprojet" />
+</resources>
