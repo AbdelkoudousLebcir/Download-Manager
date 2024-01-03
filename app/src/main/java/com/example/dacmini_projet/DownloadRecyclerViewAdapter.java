@@ -451,6 +451,9 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
 
         // this is the check methode
         public void checkIfDownloadable(String urlS, String valid, String notValid) throws InterruptedException {
+            if(!NetChecker.isConnected(context)){
+                NetChecker.showCostumDialog(context,"هذا التطبيق يستلزم وجود اتصال بالانترنت الرجاء التحقق من اتصالك.\nThis app needs network connection to function please check your connection. ",2);
+            }
             //first we need to check if the text given is a url
             if (checkIfValid(urlS)) {
                 // then we check if it's a downloadable file link i need to use thread also because i can't start a network related task in the main thread in andoird

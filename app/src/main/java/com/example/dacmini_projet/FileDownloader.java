@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class FileDownloader extends AsyncTask<String, Integer, String> {
 
     private ReentrantLock lock = new ReentrantLock();
-    private volatile boolean isPaused = false; // Use volatile for visibility across threads
+    private volatile boolean isPaused = false;
     private DownloadListener downloadListener;
     private int fileLength;
     public FileDownloader(DownloadListener downloadListener,int fileLength) {
@@ -122,7 +122,7 @@ public class FileDownloader extends AsyncTask<String, Integer, String> {
         }
     }
 
-    public interface  DownloadListener {
+    public interface DownloadListener {
         void onProgressUpdate(int progress);
 
         void onDownloadComplete(String filePath);
