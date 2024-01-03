@@ -1,9 +1,7 @@
 package com.example.dacmini_projet;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedInputStream;
 import java.io.FileOutputStream;

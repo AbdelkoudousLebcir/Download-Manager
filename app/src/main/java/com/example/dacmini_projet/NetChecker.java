@@ -1,7 +1,5 @@
 package com.example.dacmini_projet;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
