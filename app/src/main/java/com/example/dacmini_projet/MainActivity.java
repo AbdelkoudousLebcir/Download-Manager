@@ -5,21 +5,26 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
 
 
-    private FloatingActionButton checkAllBtn;
+    private FloatingActionButton downloadAllBtn;
     private ArrayList<DownloadableItem> downloadsList;
     private ImageButton addBtn;
     private RecyclerView downloadsRecyclerView;
@@ -37,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         MenuItem menuItem = menu.findItem(R.id.nothing);
         menuItem.setEnabled(false);
 
-        checkAllBtn = findViewById(R.id.checkAll);
+        downloadAllBtn = findViewById(R.id.checkAll);
 
         addBtn = findViewById(R.id.Addbtn);
         downloadsList = new ArrayList<>();
@@ -59,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        checkAllBtn.setOnClickListener(new View.OnClickListener() {
+        downloadAllBtn.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -76,7 +81,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-
     }
 
+
+
 }
+

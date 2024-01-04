@@ -30,7 +30,7 @@ public class NetChecker {
         //builder.setMessage("لم يتم تحميل الملف يرجى الإتصال بالإنترنت و المحاولة مرة أخرى\n File download failed please connect to the INTERNET and try again")
         builder.setMessage(msg)
                 .setCancelable(false);
-        if (buttonsNbr == 1){
+        if (buttonsNbr == 1) {
             builder.setCancelable(true);
             builder.setNegativeButton("Close", new DialogInterface.OnClickListener() {
                 @Override
@@ -40,16 +40,16 @@ public class NetChecker {
             }).show();
             return;
         }
-                builder.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        context.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
-                    }
-                }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+        builder.setPositiveButton("Connect", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                context.startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+            }
+        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
 
-                    }
-                }).show();
+            }
+        }).show();
     }
 }

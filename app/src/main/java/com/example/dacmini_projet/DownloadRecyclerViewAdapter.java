@@ -454,23 +454,15 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
             if(!NetChecker.isConnected(context)){
                 NetChecker.showCostumDialog(context,"هذا التطبيق يستلزم وجود اتصال بالانترنت الرجاء التحقق من اتصالك.\nThis app needs network connection to function please check your connection. ",2);
             }
-            //first we need to check if the text given is a url
             if (checkIfValid(urlS)) {
-                // then we check if it's a downloadable file link i need to use thread also because i can't start a network related task in the main thread in andoird
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-
-
                         try {
-                            // we start a connection and check for the type if it's application then it's a downloadable file except for json and xml responses types
                             URL url = new URL(urlS);
                             final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                             connection.setRequestMethod("HEAD");
                             contentType = connection.getContentType();
-
-
-                            // Use Handler to update UI on the main thread
                             new Handler(Looper.getMainLooper()).post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -495,7 +487,6 @@ public class DownloadRecyclerViewAdapter extends RecyclerView.Adapter<DownloadRe
                             });
                         } catch (final Exception e) {
                             e.printStackTrace();
-                            // Handle the exception, if needed
                         }
                     }
                 });
